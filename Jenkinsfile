@@ -1,4 +1,5 @@
 pipeline {
+    def app
     agent any
     tools {
             maven 'mavenTool'
@@ -15,13 +16,22 @@ pipeline {
             stage ('mavenCIbuild') {
                 steps {
                     sh 'mvn clean package'
+                    
                 }
             }
             stage ('Build image') {
                 steps {
-                    app = docker.build("crud-springboot-dynamodb/hellonode")
+                    app = docker.build("rajesh412/hellonode")
+
                 }
             } 
-         
+            stage('Push image') {
+
+                docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                   app.push("${env.BUILD_NUMBER}")
+                    app.push("latest")
+                }   
+                    echo "Trying to Push Docker build to Dockerhub"
+            }
         }
 }
